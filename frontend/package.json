@@ -49,6 +49,7 @@
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
-		"@number-flow/svelte": "^0.3.7"
+		"@number-flow/svelte": "^0.3.7",
+		"print-js": "^1.6.0"
 	}
 }
