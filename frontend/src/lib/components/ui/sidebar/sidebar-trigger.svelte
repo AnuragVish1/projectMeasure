@@ -17,11 +17,13 @@
 	const sidebar = useSidebar();
 </script>
 
+
 <Button
 	data-sidebar="trigger"
 	data-slot="sidebar-trigger"
 	variant="ghost"
 	size="icon"
+	id="trigger"
 	class={cn("size-7", className)}
 	type="button"
 	onclick={(e) => {

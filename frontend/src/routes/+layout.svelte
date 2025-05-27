@@ -9,7 +9,7 @@
 <Sidebar.Provider>
   <AppSidebar />
   <main class=" font-santoshi w-full">
-    <Sidebar.Trigger />
+    <Sidebar.Trigger class=" print:opacity-0"/>
     {@render children?.()}
   </main>
 </Sidebar.Provider>

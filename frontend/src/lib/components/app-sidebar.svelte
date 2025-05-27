@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { size } from '@floating-ui/dom';
+
  import CalendarIcon from "@lucide/svelte/icons/calendar";
  import HouseIcon from "@lucide/svelte/icons/house";
  import InboxIcon from "@lucide/svelte/icons/inbox";
@@ -39,6 +39,17 @@
   },
  ];
 </script>
+
+<style>
+    @media print {
+		@page { margin: 0; }
+	
+    body * {
+        visibility: hidden;
+    }
+    
+}
+</style>
  
 <Sidebar.Root collapsible="icon">
  <Sidebar.Content>

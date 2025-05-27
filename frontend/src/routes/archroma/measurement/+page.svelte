@@ -8,6 +8,10 @@
 	import TableRow from '$lib/components/ui/table/table-row.svelte';
 	import rateData from '$lib/components/rates';
 	import printJS from 'print-js';
+	  import { Toaster, toast } from 'svelte-sonner'
+
+	  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+
 
 	const engineers = [
 		'Mr. Sunny Patel',
@@ -20,12 +24,12 @@
 
 	interface TableRow {
 		id: number;
-		code: number;
+		code: number | null;
 		description: string;
 		unit: string;
-		qty: number;
-		rate: number;
-		total: number;
+		qty: number | null;
+		rate: number | null;
+		total: number | null;
 	}
 
 	let tableRows = $state<TableRow[]>([
@@ -37,6 +41,7 @@
 		{ id: 5, code: 0, description: '', unit: '', qty: 0, rate: 0, total: 0 }
 	]);
 
+	let error = $state("")
 	let summary_number = $state(0);
 	let sheet_numbers = $state('');
 	let value = $state('');
@@ -56,8 +61,8 @@
 			description: '',
 			unit: '',
 			qty: 0,
-			rate: 0,
-			total: 0
+			rate: null,
+			total:  null
 		};
 		tableRows = [...tableRows, newRow];
 	};
@@ -89,24 +94,96 @@
 	const triggerContent = $derived(engineers.find((f) => f === value) ?? 'Select Engineer');
 
 	function printTable() {
-		if (summary_number == 0 || sheet_numbers == '' || value == '') {
-			window.alert('enter all the data');
+		if (summary_number == 0 || summary_number == null) {
+			toast.warning('Please enter summary number')
+
+			error = 'Please fill the details'
 			return;
 		}
-		printJS({
-			printable: 'table', // Your table's ID
-			type: 'html',
-			targetStyles: ['*'] // Include all styles
-		});
+		else if ( sheet_numbers == '')
+		{
+			toast.warning('Please enter the sheet numbers')
+			return;
+		}
+		else if (value == '')
+		{
+			toast.warning('Please select engineer name')
+			return;
+		}
+		window.print();
 	}
+
+	const sortData = () => {
+		console.log(tableRows)
+		tableRows.sort((a, b) => a.code - b.code);
+		console.log(tableRows)
+	}
+
+	//TODO: Adding of similar code fields
+	//TODO: Add
 </script>
 
+<style>
+	@media print {
+		@page { margin: 1.5rem; }
+		
+		/* Target the exact sidebar trigger with maximum specificity */
+
+		#panel-icon {
+			display: none !important;
+		}
+
+		body * {
+			visibility: hidden;
+		}
+
+		main > #trigger {
+			display: none !important;
+		}
+		
+		#title {
+			display: none;
+		}
+		
+		#panel {
+			display: none;
+		}
+		
+		#table, #table * {
+			visibility: visible;
+		}
+		
+		#table {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100% !important;
+		}
+
+		#input {
+			background-color: transparent !important;
+			border: none !important;
+			outline: none !important;
+			box-shadow: none !important;
+		}
+		
+		/* Nuclear option - hide everything that might be a sidebar */
+		[data-slot*="sidebar"],
+		[data-sidebar],
+		[class*="sidebar"] {
+			display: none !important;
+			visibility: hidden !important;
+		}
+	}
+</style>
 <div class="p-6">
-	<h1 class="font-santoshi-bold border-b-1 select-none border-[#dedede] pb-4 text-4xl">
+	<Toaster position="top-center" richColors />
+	
+	<h1 class="font-santoshi-bold border-b-1 select-none border-[#dedede] pb-4 text-4xl" id="title">
 		Archroma Measurement Summary
 	</h1>
-	<div class="flex h-full items-start justify-center gap-[10rem]">
-		<div class=" border-r-1 mt-5 flex w-[18%] flex-col gap-5 pr-5 pt-5">
+	<div class="flex h-full items-start justify-center gap-[5rem]">
+		<div class=" border-r-1 mt-5 flex w-[18%] flex-col gap-5 pr-5 mr-15 pt-5"  id="panel">
 			<h1 class="font-santoshi-bold text-2xl">Details</h1>
 			<div>
 				<Label for="summaryNumber" class="text-lg">Summary Number</Label>
@@ -131,8 +208,8 @@
 			<div>
 				<Label for="sheetNumber" class="text-lg">Engineer Name</Label>
 				<Select.Root type="single" bind:value>
-					<Select.Trigger class="w-full ">{triggerContent}</Select.Trigger>
-					<Select.Content class=" font-santoshi text-md subpixel-antialiased">
+					<Select.Trigger class="w-full  bg-white">{triggerContent}</Select.Trigger>
+					<Select.Content class=" font-santoshi text-md subpixel-antialiased bg-white">
 						{#each engineers as engineer}
 							<Select.Item value={engineer} label={engineer}>{engineer}</Select.Item>
 						{/each}
@@ -143,21 +220,31 @@
 				<Label for="Rows" class="text-lg">Rows</Label>
 				<div class="flex items-center justify-between gap-5">
 					<button
-						class="border-1 flex w-full cursor-pointer items-center justify-center rounded-lg p-5 transition-all duration-300 hover:scale-95 hover:bg-[#eee]"
+						class="border-1 flex w-full cursor-pointer items-center justify-center rounded-lg p-5 transition-all duration-300 hover:scale-95 hover:bg-[#eee] bg-white"
 						onclick={addRow}><Plus /></button
 					>
 					<button
-						class="border-1 flex w-full cursor-pointer items-center justify-center rounded-lg p-5 transition-all duration-300 hover:scale-95 hover:bg-[#eee]"
+						class="border-1 flex w-full cursor-pointer items-center justify-center rounded-lg p-5 transition-all duration-300 hover:scale-95 hover:bg-[#eee] bg-white"
 						onclick={deleteRow}><Minus /></button
 					>
 				</div>
 				<div class="pt-2">
 					<Label for="Print" class="text-lg">Print Sheet</Label>
 					<button
-						class="border-1 flex w-full cursor-pointer items-center justify-center rounded-lg p-5 transition-all duration-300 hover:scale-95 hover:bg-[#eee]"
+						class="border-1 flex w-full cursor-pointer items-center justify-center rounded-lg p-5 transition-all duration-300 hover:scale-95 hover:bg-[#eee] bg-white"
 						onclick={printTable}
 					>
 						Print
+					</button>
+				</div>
+				<div>
+					<Label for="Filter" class="text-lg">Sort</Label>
+
+				<button
+						class="border-1 flex w-full cursor-pointer items-center justify-center rounded-lg p-5 transition-all duration-300 hover:scale-95 hover:bg-[#eee] bg-white"
+						onclick={sortData}
+					>
+						Sort
 					</button>
 				</div>
 			</div>
@@ -212,7 +299,9 @@
 					<Table.Row>
 						<Table.Head class="font-santoshi-bold border border-black"></Table.Head>
 						<Table.Head class="font-santoshi-bold w-[70%] border border-black"
-							><Input class="font-santoshi h-12 p-0 text-[1.11rem]" /></Table.Head
+							><Input class="font-santoshi h-12 p-0 text-[1.11rem] print:border-0 print:bg-transparent print:shadow-none" id="input" 
+							
+							/></Table.Head
 						>
 						<Table.Head class="font-santoshi-bold w-[10%] border border-black text-center"
 						></Table.Head>
@@ -229,7 +318,8 @@
 						<Table.Row>
 							<Table.Cell class="border border-black text-center "
 								><Input
-									class="font-santoshi p-0 text-[1.1rem] "
+									class="font-santoshi p-0 text-[1.1rem] text-center print:border-0 print:bg-transparent print:shadow-none" id="input"
+									bind:value={tableRow.code}
 									oninput={(e) =>
 										updateRow(tableRow.id, 'code', (event.target as HTMLInputElement).value)}
 								/></Table.Cell
@@ -240,7 +330,8 @@
 							<Table.Cell class="border border-black text-left ">{tableRow.unit}</Table.Cell>
 							<Table.Cell class="border border-black text-right"
 								><Input
-									class="font-santoshi p-0 text-[1.1rem]"
+									class="font-santoshi p-0 text-[1.1rem] print:border-0 print:bg-transparent print:shadow-none" id="input"
+									bind:value={tableRow.qty}
 									oninput={(e) =>
 										updateRow(tableRow.id, 'qty', (event.target as HTMLInputElement).value)}
 								/></Table.Cell
